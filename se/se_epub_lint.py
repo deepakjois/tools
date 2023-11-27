@@ -105,7 +105,7 @@ SPECIAL_FILES = ["colophon", "endnotes", "imprint", "loi"]
 INITIALISM_EXCEPTIONS = ["G", # as in `G-Force`
 			"1D", "2D", "3D", "4D", # as in `n-dimensional`
 			"MS.", "MSS.", # Manuscript(s)
-			"MM.",	# Messiuers
+			"MM.", # Messiuers
 			"κ.τ.λ.", # "etc." in Greek, and we don't match Greek chars.
 			"TV",
 			"AC", "DC" # electrical current
@@ -453,7 +453,7 @@ TYPOS
 "y-003”, "Possible typo: paragraph missing ending punctuation."
 "y-004”, "Possible typo: mis-curled quotation mark after dash."
 "y-005”, "Possible typo: question mark or exclamation mark followed by period or comma."
-"y-006”, "Possible typo: [text]‘[/] without matching [text]’[/]. Hints: [text]’[/] are used for abbreviations;	commas and periods must go inside quotation marks."
+"y-006”, "Possible typo: [text]‘[/] without matching [text]’[/]. Hints: [text]’[/] are used for abbreviations; commas and periods must go inside quotation marks."
 "y-007”, "Possible typo: [text]‘[/] not within [text]“[/]. Hints: Should [text]‘[/] be replaced with [text]“[/]? Is there a missing closing quote? Is this a nested quote that should be preceded by [text]“[/]? Are quotes in close proximity correctly closed?"
 "y-008”, "Possible typo: dialog interrupted by interjection but with incorrect closing quote."
 "y-009”, "Possible typo: dialog begins with lowercase letter."
@@ -548,11 +548,11 @@ def _build_section_tree(self) -> List[EbookSection]:
 	#  preface (2)
 	#  halftitlepage (2)
 	#  part-1 (2)
-	#	 division-1-1 (3)
-	#	   chapter-1-1-1 (4)
-	#	   chapter-1-1-2 (4)
-	#	   chapter-1-1-3 (4)
-	#	   chapter-1-1-4 (4)
+	#   division-1-1 (3)
+	#   chapter-1-1-1 (4)
+	#   chapter-1-1-2 (4)
+	#   chapter-1-1-3 (4)
+	#   chapter-1-1-4 (4)
 	section_tree: List[EbookSection] = []
 
 	for filename in self.spine_file_paths:
@@ -677,7 +677,7 @@ def _lint_metadata_checks(self) -> list:
 			# Check for malformed long description HTML
 			try:
 				etree.parse(io.StringIO(f"<?xml version=\"1.0\"?><html xmlns=\"http://www.w3.org/1999/xhtml\">{long_description}</html>"))
-			except lxml.etree.XMLSyntaxError as ex:
+			except etree.XMLSyntaxError as ex:
 				messages.append(LintMessage("m-015", f"Metadata long description is not valid XHTML. LXML says: {ex}", se.MESSAGE_TYPE_ERROR, self.metadata_file_path))
 
 		# Check for apostrophes outside links in long description
@@ -766,7 +766,7 @@ def _lint_metadata_checks(self) -> list:
 		if self.metadata_dom.xpath(f"/package/metadata/meta[@property='se:subject' and text()={se.easy_xml.escape_xpath(implied_tag)}]"):
 			for tag in tags:
 				if self.metadata_dom.xpath(f"/package/metadata/meta[@property='se:subject' and text()={se.easy_xml.escape_xpath(tag)}]"):
-					messages.append(LintMessage("m-058", f"[val]se:subject[/] of [text]{implied_tag}[/] found, but [text]{tag}[/] implies [text]{implied_tag}[/].", se.MESSAGE_TYPE_ERROR, self.metadata_file_path, matches))
+					messages.append(LintMessage("m-058", f"[val]se:subject[/] of [text]{implied_tag}[/] found, but [text]{tag}[/] implies [text]{implied_tag}[/].", se.MESSAGE_TYPE_ERROR, self.metadata_file_path))
 
 	# Check for 'comprised of'
 	if self.metadata_dom.xpath("/package/metadata/*[re:test(., '[Cc]omprised of')]"):
@@ -1491,6 +1491,7 @@ def _lint_special_file_checks(filename: Path, dom: se.easy_xml.EasyXmlTree, file
 			figure_ref = node.get_attr("href").split("#")[1]
 			chapter_ref = regex.findall(r"(.*?)#.*", node.get_attr("href"))[0]
 			figcaption_text = ""
+			figure_img_alt = ""
 			loi_text = node.inner_text()
 			file_dom = self.get_dom(self.content_path / "text" / chapter_ref)
 
@@ -3199,7 +3200,7 @@ def lint(self, skip_lint_ignore: bool, allowed_messages: Optional[List[str]] = N
 		"has_frontmatter": False,
 		"has_glossary_search_key_map": False,
 		"has_halftitle": False,
-		"has_subtitle": bool(self.metadata_dom.xpath("/package/metadata/meta[@property='title-type' and text()='subtitle']")),
+		"has_subtitle": len(self.metadata_dom.xpath("/package/metadata/meta[@property='title-type' and text()='subtitle']")) > 0,
 		"has_images": False,
 		"has_multiple_transcriptions": False,
 		"has_multiple_page_scans": False,
